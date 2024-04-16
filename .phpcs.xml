@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="WordPress Module">
+	<config name="minimum_supported_wp_version" value="6.4"/>
+  <config name="testVersion" value="8.1-"/>
+
+  <rule ref="Oblak"/>
+  <rule ref="Oblak-Advanced"/>
+
+  <file>src/</file>
+
+  <rule ref="SlevomatCodingStandard.Operators.SpreadOperatorSpacing">
+    <severity>0</severity>
+  </rule>
+
+  <rule ref="Universal.NamingConventions.NoReservedKeywordParameterNames.namespaceFound">
+    <severity>0</severity>
+  </rule>
+</ruleset>
