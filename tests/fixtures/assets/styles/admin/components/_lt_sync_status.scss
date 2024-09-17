@@ -1,0 +1,21 @@
+.wp-list-table {
+  th {
+    .woosync-icon {
+      width: 18px;
+      display: block;
+      margin: 0 auto;
+    }
+  }
+
+  td.column-wss_sync_status {
+    .wss-sync-status{
+      display:flex;
+      align-items: center;
+
+      .sync-status-left {
+        margin-right: 20px;
+      }
+    }
+  }
+}
+

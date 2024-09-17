@@ -1,0 +1,16 @@
+#wpadminbar {
+  #wp-admin-bar-woosync {
+    > .ab-item {
+      display: flex !important;
+      align-items: center;
+
+      &::before {
+        content: "\e4c7";
+        font-family: "Font Awesome 6 Pro", sans-serif !important;
+        font-size: 16px;
+        line-height: 23px;
+        font-weight: 300;
+      }
+    }
+  }
+}

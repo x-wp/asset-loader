@@ -6,16 +6,15 @@
  * @subpackage Asset Loader
  */
 
-use XWP\Dependency\Bundle;
 use XWP\Helper\Traits\Singleton;
 
 /**
  * Asset loader.
  *
- * @method static self    add_bundle( Bundle $bundle )        Add a bundle.
- * @method static self    load_bundle( Bundle|array $bundle ) Load a bundle.
- * @method static Bundle  make_bundle( array $args )          Create a bundle.
- * @method static ?Bundle get_bundle(string $id)              Get a bundle by ID.
+ * @method static self    add_bundle( XWP_Asset_Bundle $bundle )        Add a bundle.
+ * @method static self    load_bundle( XWP_Asset_Bundle|array $bundle ) Load a bundle.
+ * @method static XWP_Asset_Bundle  make_bundle( array $args )          Create a bundle.
+ * @method static ?XWP_Asset_Bundle get_bundle(string $id)              Get a bundle by ID.
  */
 final class XWP_Asset_Loader {
     use Singleton;
@@ -23,7 +22,7 @@ final class XWP_Asset_Loader {
     /**
      * Asset bundles. Keyed by bundle id.
      *
-     * @var array<string, Bundle>
+     * @var array<string, XWP_Asset_Bundle>
      */
     private array $bundles = array();
 
@@ -45,49 +44,12 @@ final class XWP_Asset_Loader {
     }
 
     /**
-     * Load a bundle.
+     * Check if the asset loader is initialized.
      *
-     * @param  Bundle $bundle The bundle to load.
-     * @return self
+     * @return bool
      */
-    private function call_add_bundle( Bundle $bundle ): self {
-        $this->bundles[ $bundle->id() ] = $bundle;
-
-        return $this;
-    }
-
-    /**
-     * Load a bundle, or create a bundle from arguments and load it.
-     *
-     * @param  array<string,mixed>|Bundle $bundle Bundle instance or bundle arguments.
-     * @return self
-     */
-    private function call_load_bundle( array|Bundle $bundle ): self {
-        if ( ! ( $bundle instanceof Bundle ) ) {
-            $bundle = self::make_bundle( $bundle );
-        }
-
-        return self::add_bundle( $bundle );
-    }
-
-    /**
-     * Make a bundle from arguments.
-     *
-     * @param  array<string,mixed> $args Bundle arguments.
-     * @return Bundle
-     */
-    private function call_make_bundle( array $args ): Bundle {
-        return new Bundle( ...$args );
-    }
-
-    /**
-     * Get a bundle by ID.
-     *
-     * @param  string $id Bundle ID.
-     * @return Bundle|null
-     */
-    private function call_get_bundle( string $id ): ?Bundle {
-        return $this->bundles[ $id ] ?? null;
+    public static function initialized(): bool {
+        return null !== self::$instance;
     }
 
     /**
@@ -130,13 +92,58 @@ final class XWP_Asset_Loader {
                 $hook,
                 static function () use ( $bundle, $context ) {
                     foreach ( $bundle->get_assets( $context ) as $asset ) {
-                        $asset->register();
-                        $asset->enqueue();
+                        $asset->process( 'auto' );
                     }
                 },
                 $bundle->priority(),
                 0,
             );
         }
+    }
+
+    /**
+     * Load a bundle.
+     *
+     * @param  XWP_Asset_Bundle $bundle The bundle to load.
+     * @return self
+     */
+    private function call_add_bundle( XWP_Asset_Bundle $bundle ): self {
+        $this->bundles[ $bundle->id() ] = $bundle;
+
+        return $this;
+    }
+
+    /**
+     * Load a bundle, or create a bundle from arguments and load it.
+     *
+     * @param  array<string,mixed>|XWP_Asset_Bundle $bundle Bundle instance or bundle arguments.
+     * @return self
+     */
+    private function call_load_bundle( array|XWP_Asset_Bundle $bundle ): self {
+        if ( ! ( $bundle instanceof XWP_Asset_Bundle ) ) {
+            $bundle = self::make_bundle( $bundle );
+        }
+
+        return self::add_bundle( $bundle );
+    }
+
+    /**
+     * Make a bundle from arguments.
+     *
+     * @param  array<string,mixed> $args Bundle arguments.
+     * @return XWP_Asset_Bundle
+     */
+    private function call_make_bundle( array $args ): XWP_Asset_Bundle {
+        return new XWP_Asset_Bundle( ...$args );
+    }
+
+    /**
+     * Get a bundle by ID.
+     *
+     * @param  string $id Bundle ID.
+     * @return XWP_Asset_Bundle|null
+     */
+    private function call_get_bundle( string $id ): ?XWP_Asset_Bundle {
+        return $this->bundles[ $id ] ?? null;
     }
 }

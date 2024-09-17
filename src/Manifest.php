@@ -24,13 +24,13 @@ class Manifest {
         }
 
         $file = true === $file ? 'assets' : $file;
-        $data = static::get_manifest_cache( $id, $ver );
+        $data = static::get_cache( $id, $ver );
 
         if ( $data ) {
             return $data;
         }
 
-        return static::set_manifest_cache( $id, $ver, static::read_manifest_file( $dir, $file ) );
+        return static::set_cache( $id, $ver, static::read_file( $dir, $file ) );
     }
 
     /**
@@ -40,7 +40,7 @@ class Manifest {
      * @param  string|false $ver The version of the manifest.
      * @return array<string,string>|null
      */
-    public static function get_manifest_cache( string $id, string|bool $ver ): ?array {
+    public static function get_cache( string $id, string|bool $ver ): ?array {
         if ( ! static::cache_enabled( $ver ) ) {
             return null;
         }
@@ -56,7 +56,7 @@ class Manifest {
      * @param  array<string,string> $data The data to cache.
      * @return array<string,string>
      */
-    public static function set_manifest_cache( string $id, string|bool $ver, array $data ): array {
+    public static function set_cache( string $id, string|bool $ver, array $data ): array {
         if ( static::cache_enabled( $ver ) ) {
             \set_transient( static::get_cache_key( $id, $ver ), $data, \HOUR_IN_SECONDS );
         }
@@ -96,7 +96,7 @@ class Manifest {
      *
      * @throws \Throwable If the manifest file cannot be read.
      */
-    public static function read_manifest_file( string $dir, string $file ): array {
+    public static function read_file( string $dir, string $file ): array {
         $file = \trailingslashit( $dir ) . \pathinfo( $file, PATHINFO_FILENAME );
         $args = array( 'associative' => true );
         try {

@@ -1,4 +1,4 @@
-<?php
+<?php //phpcs:disable Squiz.Commenting.FunctionComment.IncorrectTypeHint
 /**
  * Bundle class file.
  *
@@ -6,8 +6,7 @@
  * @subpackage Asset Loader
  */
 
-namespace XWP\Dependency;
-
+use XWP\Dependency\Manifest;
 use XWP\Dependency\Resources\Font;
 use XWP\Dependency\Resources\Image;
 use XWP\Dependency\Resources\Script;
@@ -20,7 +19,7 @@ use XWP\Helper\Traits\Array_Access;
  * @implements \ArrayAccess<string,Style|Script|Image|Font>
  * @implements \Iterator<string,Style|Script|Image|Font>
  */
-class Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSerializable {
+class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSerializable {
     /**
      * Use the array access trait.
      *
@@ -171,6 +170,12 @@ class Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSerializable {
         return $this;
     }
 
+    /**
+     * Set the bundle manifest.
+     *
+     * @param  string|bool $file The manifest file.
+     * @return self
+     */
     public function with_manifest( string|bool $file ): self {
         if ( $this->base_dir() ) {
             $this->manifest = Manifest::load( $file, $this->base_dir(), $this->id(), $this->version() );
@@ -270,6 +275,12 @@ class Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSerializable {
         return $this;
     }
 
+    /**
+     * Make a file.
+     *
+     * @param  string $src The source of the file.
+     * @return Image|Font
+     */
     public function make_file( string $src ): Image|Font {
         $ext = \pathinfo( $src, \PATHINFO_EXTENSION );
 
@@ -319,5 +330,46 @@ class Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSerializable {
      */
     public function load(): void {
         \XWP_Asset_Loader::add_bundle( $this );
+    }
+
+    /**
+     * Find assets by extension.
+     *
+     * @param  string $ext The extension to find.
+     * @return array<string,Style|Script|Image|Font>
+     */
+    public function find( string $ext ): array {
+        $found = array();
+
+        foreach ( array_keys( $this->manifest ) as $src ) {
+            if ( pathinfo( $src, PATHINFO_EXTENSION ) !== $ext ) {
+                continue;
+            }
+
+            $found[ $src ] = $this[ $src ];
+        }
+
+        return $found;
+    }
+
+    /**
+     * Get the assets for a given type.
+     *
+     * @template T of Style|Script|Image|Font
+     * @param  class-string<T> $type The type of asset to get.
+     * @return array<string,T>
+     */
+    public function get( string $type ): array {
+        $found = array();
+
+        foreach ( array_keys( $this->manifest ) as $src ) {
+            if ( ! ( $this[ $src ] instanceof $type ) ) {
+                continue;
+            }
+
+            $found[ $src ] = $this[ $src ];
+        }
+
+        return $found;
     }
 }

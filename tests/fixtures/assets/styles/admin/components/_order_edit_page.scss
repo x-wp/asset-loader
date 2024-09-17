@@ -1,0 +1,28 @@
+#woocommerce-order-notes .inside {
+  ul.order_notes {
+    .note.woosync-note {
+      &.fail .note_content{
+        background-color: #fdd;
+
+        &::after {
+          border-color: #fdd transparent;
+        }
+      }
+
+      &.success .note_content{
+        background-color: #dfd;
+
+        &::after {
+          border-color: #dfd transparent;
+        }
+      }
+
+      p.meta {
+        // a {
+        //   display: none;
+        // }
+      }
+
+    }
+  }
+}

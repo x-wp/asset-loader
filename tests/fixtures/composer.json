@@ -1,0 +1,27 @@
+{
+  "require": {
+    "x-wp/asset-loader": "^1"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "/home/venom/projects/composer/xwp/asset-loader",
+      "options": {
+        "symlink": true,
+        "versions": {
+          "x-wp/asset-loader": "1.0.0"
+        }
+      },
+      "only": [
+        "x-wp/asset-loader"
+      ]
+    }
+  ],
+  "config": {
+    "optimize-autoloader": true,
+    "classmap-authoritative": true
+  },
+  "require-dev": {
+    "symfony/var-dumper": "^6.4"
+  }
+}

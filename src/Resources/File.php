@@ -8,7 +8,7 @@
 
 namespace XWP\Dependency\Resources;
 
-use XWP\Dependency\Bundle;
+use XWP_Asset_Bundle;
 
 /**
  * Base file resource.
@@ -33,23 +33,25 @@ class File {
      *
      * @var string
      */
-    protected string $name;
+    protected string $id;
 
     /**
      * Constructor
      *
-     * @param Bundle  $bundle Bundle instance.
-     * @param string  $src    File source.
-     * @param ?string $dst   File name.
+     * @param XWP_Asset_Bundle $bundle Bundle instance.
+     * @param string           $src    File source.
+     * @param ?string          $dst   File name.
+     * @param ?string          $id    File ID.
      */
     public function __construct(
-        protected Bundle &$bundle,
+        protected XWP_Asset_Bundle &$bundle,
         protected string $src,
         ?string $dst = null,
+        ?string $id = null,
     ) {
-        $this->dst  = $dst ?? $src;
-        $this->ext  = \pathinfo( $this->src, \PATHINFO_EXTENSION );
-        $this->name = \pathinfo( $this->src, \PATHINFO_FILENAME );
+        $this->dst = $dst ?? $src;
+        $this->ext = \pathinfo( $this->src, \PATHINFO_EXTENSION );
+        $this->id  = $id ?? \pathinfo( $this->src, \PATHINFO_FILENAME );
     }
 
     /**
@@ -93,8 +95,8 @@ class File {
      *
      * @return string
      */
-    public function name(): string {
-        return $this->name;
+    public function id(): string {
+        return $this->id;
     }
 
     /**

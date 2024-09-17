@@ -6,8 +6,6 @@
  * @subpackage Asset Loader
  */
 
-use XWP\Dependency\Bundle;
-
 /**
  * Retriever trait.
  */
@@ -35,19 +33,19 @@ trait XWP_Asset_Retriever {
     /**
      * Add a bundle to the asset loader.
      *
-     * @param  Bundle $bundle Bundle instance.
+     * @param  XWP_Asset_Bundle $bundle Bundle instance.
      * @return void
      */
-    protected function add_bundle( Bundle $bundle ): void {
+    protected function add_bundle( XWP_Asset_Bundle $bundle ): void {
         XWP_Asset_Loader::add_bundle( $bundle );
     }
 
     /**
      * Get the bundle instance.
      *
-     * @return Bundle Bundle instance.
+     * @return XWP_Asset_Bundle Bundle instance.
      */
-    private function bundle(): Bundle {
+    private function bundle(): XWP_Asset_Bundle {
         return XWP_Asset_Loader::get_bundle( $this->bundle_id );
     }
 

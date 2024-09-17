@@ -1,0 +1,76 @@
+#wss-log-table {
+  th {
+    &:nth-child(1) {
+      width: 5% !important;
+    }
+
+    &:nth-child(2) {
+      width: 15% !important;
+    }
+
+    &:nth-child(3) {
+      width: 10% !important;
+    }
+
+    &:nth-child(4) {
+      width: 70% !important;
+    }
+  }
+
+  tbody {
+    tr {
+      &.level-debug {
+        background-color: #c2a3d6;
+      }
+
+      &.level-warning {
+        background-color: #e8e676;
+      }
+
+      &.level-error {
+        background-color: #ebb475;
+      }
+
+      &.level-alert {
+        background-color: #eb9a75;
+      }
+
+      &.level-emergency {
+        background-color: #eb7b75;
+      }
+
+      &.level-critical {
+        background-color: #eb7575;
+      }
+
+      &.level-notice {
+        background-color: #72bbe8;
+      }
+
+      &.level-info {
+        background-color: #74ed92;
+      }
+
+      td {
+        border-bottom: 1px solid #ddd;
+
+        &:nth-child(1) {
+          text-align: center;
+
+          &::after {
+            content: ".";
+          }
+        }
+
+        &:nth-child(3) {
+          font-weight: 700;
+          text-align: center;
+        }
+
+        &:nth-child(4) {
+          text-align: center;
+        }
+      }
+    }
+  }
+}
