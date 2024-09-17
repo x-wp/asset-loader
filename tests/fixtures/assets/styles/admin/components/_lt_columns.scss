@@ -1,0 +1,75 @@
+.wp-list-table {
+  // .wss-icon {
+  //   font-family: woocommerce, sans-serif;
+  //   font-size: 17px;
+
+  //   &.wss-yes {
+  //     color: #039403;
+
+  //     &::before {
+  //       content: "\e015";
+  //     }
+  //   }
+
+  //   &.wss-no {
+  //     color: #940303;
+
+  //     &::before {
+  //       content: "\e016";
+  //     }
+  //   }
+
+  //   &.wss-unknown {
+  //     color: #00106b;
+
+  //     &::before {
+  //       content: "\e011";
+  //     }
+  //   }
+  // }
+
+  th {
+    &#wc_erp_status {
+      width: 30px;
+    }
+
+    &#wc_product_visibility {
+      width: 20px;
+
+      .visibility-icon::after {
+        font-family: woocommerce, sans-serif;
+        content: "\e010";
+      }
+    }
+  }
+
+  td {
+    // &.column-wc_erp_status {
+    //   text-align: right;
+    // }
+
+    &.column-wc_actions {
+      .woosync_mark_status_cancelled::after {
+        font-family: "Font Awesome 6 Pro", sans-serif;
+        content:"\f056";
+        font-weight: 700;
+        color:#a00;
+      }
+
+      .woosync_mark_status_pending::after {
+        font-family: "Font Awesome 6 Pro", sans-serif;
+        content:"\f1da";
+        font-weight: 700;
+        color: darkgoldenrod
+      }
+
+      .woosync_dispatch_order {
+        &::after {
+          font-family: woocommerce, sans-serif;
+          content: "\e034";
+          color: #46b450;
+        }
+      }
+    }
+  }
+}

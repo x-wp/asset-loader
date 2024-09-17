@@ -1,173 +1,205 @@
-<?php
-/**
- * Asset class
- *
- * @package eXtended WordPress
- */
+<?php //phpcs:disable Squiz.Commenting.FunctionComment.Missing, Squiz.PHP.DisallowMultipleAssignments.Found
 
 namespace XWP\Dependency\Resources;
 
-use XWP\Contracts\Hook\Context;
-use XWP\Dependency\Enums\EnqueueMode;
-use XWP\Dependency\Interfaces\Asset_Interface;
+use XWP\Dependency\Interfaces\Can_Enqueue;
+use XWP\Dependency\Interfaces\Can_Register;
+use XWP\Dependency\Interfaces\Has_Context;
+use XWP_Asset_Bundle;
 
 /**
- * Base class for assets
+ * Base class for assets.
  */
-abstract class Asset extends File implements Asset_Interface {
+abstract class Asset extends File implements Has_Context, Can_Enqueue, Can_Register {
     /**
-     * Asset handle
+     * Whether the asset is registered.
      *
-     * @var string
+     * @var bool
      */
-    public readonly string $handle;
+    protected bool $is_registered = false;
 
     /**
-     * Resource configuration
+     * Whether the asset is enqueued.
      *
-     * @var array
+     * @var bool
      */
-    public readonly array $config;
+    protected bool $is_enqueued = false;
 
     /**
-     * Context of the asset
+     * Asset constructor.
      *
-     * @var Context
-     */
-    public readonly Context $context;
-
-    /**
-     * Enqueue mode
-     *
-     * @var EnqueueMode
-     */
-    public readonly EnqueueMode $mode;
-
-
-    /**
-     * Version of the asset
-     *
-     * @var string
-     */
-    public readonly ?string $version;
-
-    /**
-     * Dependencies of the asset
-     *
-     * @var array
-     */
-    public readonly array $deps;
-
-    /**
-     * List of completed actions
-     *
-     * @var array
-     */
-    protected array $actions = array();
-
-    /**
-     * Constructor
-     *
-     * @param  string      $src       URL to the asset.
-     * @param  string      $namespace Namespace of the asset.
-     * @param  string|null $handle    Handle of the asset.
-     * @param  Context     $context   Context of the asset.
-     * @param  EnqueueMode $mode      Enqueue mode of the asset.
-     * @param  string|null $version   Version of the asset.
-     * @param  array       $deps      Dependencies of the asset.
-     * @param  array       $config    Configuration of the asset.
+     * @param XWP_Asset_Bundle         $bundle The bundle object.
+     * @param string                   $src    The source of the asset.
+     * @param string|null              $dst   The name of the asset.
+     * @param string|null              $id    The ID of the asset.
+     * @param 'admin'|'front'          $ctx    The context of the asset.
+     * @param 'auto'|'manual'          $mode   The mode of the asset.
+     * @param array<int,string>        $deps   The dependencies of the asset.
+     * @param array<string,mixed>|null $args   The arguments of the asset.
+     * @param string|null              $handle The handle of the asset.
      */
     public function __construct(
+        XWP_Asset_Bundle &$bundle,
         string $src,
-        string $namespace,
-        ?string $handle,
-        Context $context,
-        EnqueueMode $mode,
-        ?string $version,
-        array $deps,
-        array $config,
+        ?string $dst = null,
+        ?string $id = null,
+        protected string $ctx = 'front',
+        protected string $mode = 'auto',
+        protected array $deps = array(),
+        protected ?array $args = null,
+        protected ?string $handle = null,
     ) {
-        parent::__construct( $src, $namespace );
+        parent::__construct( $bundle, $src, $dst, $id );
+    }
 
-        $this->handle  = $handle ?? $this->set_handle( $src, $namespace );
-        $this->context = $context;
-        $this->mode    = $mode;
-        $this->version = $version;
-        $this->deps    = $deps;
-        $this->config  = \wp_parse_args( $config, $this->default_config() );
+    public function ctx(): string {
+        return $this->ctx;
+    }
+
+    public function mode(): string {
+        return $this->mode;
+    }
+
+    public function deps(): array {
+        return $this->deps;
+    }
+
+    public function version(): string|false|null {
+        return $this->bundle->version();
+    }
+
+    public function handle(): string {
+        if ( isset( $this->handle ) ) {
+            return $this->handle;
+        }
+
+        return $this->bundle->id() . '-' . $this->id();
+    }
+
+    public function process( string $mode = 'auto' ): bool {
+        $this->register();
+        $this->localize();
+        $this->enqueue( $mode );
+        $this->add_inline();
+
+        return $this->is_registered && $this->is_enqueued;
+    }
+
+    public function register(): bool {
+        return $this->is_registered = $this->run_cb( 'register' );
+    }
+
+    public function localize(): bool {
+        return $this->run_cb( 'localize' );
+    }
+
+    public function enqueue( string $mode = 'auto' ): bool {
+        return $this->is_enqueued = $this->is_registered && $mode === $this->mode && $this->run_cb( 'enqueue' );
+    }
+
+    public function add_inline(): bool {
+        return $this->run_cb( 'add_inline' );
+    }
+
+    protected function run_cb( string $action ): bool {
+        /**
+         * The callback function for the action.
+         *
+         * @var callable-string $cbfn
+         */
+        $cbfn = "wp_{$action}_{$this->type()}";
+        $args = $this->{"{$action}_args"}();
+
+        if ( ! \function_exists( $cbfn ) || ! $this->check_cb( $action ) || false === $args ) {
+            return false;
+        }
+
+        return (bool) ( $cbfn( $this->handle(), ...$args, ) ?? 1 );
+    }
+
+    protected function check_cb( string $action ): bool {
+        if ( 'register' !== $action && 'enqueue' !== $action ) {
+            return true;
+        }
+
+        $action = "{$this->bundle->id()}_can_{$action}_{$this->type()}";
+
+        return \apply_filters( $action, true, $this->id(), $this );
     }
 
     /**
-     * Get default configuration
+     * Get the arguments for registering the asset.
      *
-     * @return array Default configuration
+     * @return array<string, mixed>
      */
-    abstract protected function default_config(): array;
-
-    /**
-     * Set asset handle
-     *
-     * @param  string $src       URL to the asset.
-     * @param  string $namespace Namespace of the asset.
-     * @return string Asset handle
-     */
-    protected function set_handle( string $src, string $namespace, ): string {
-        $parts   = \explode( '-', $namespace );
-        $parts[] = \basename( $src );
-        return \sanitize_title( \implode( '-', \array_unique( $parts ) ) );
-    }
-
-    /**
-     * Get resource arguments
-     *
-     * @param  string $base_uri Base URL of the resource.
-     * @return array Resource arguments
-     */
-    public function get_resource_args( string $base_uri ): array {
-        return array(
-            'deps'   => $this->deps,
-            'handle' => $this->handle,
-            'src'    => \trailingslashit( $base_uri ) . $this->src,
-            'ver'    => $this->version,
+    protected function register_args(): array {
+        return \array_merge(
+            array(
+                'deps' => $this->deps(),
+                'src'  => $this->uri(),
+                'ver'  => $this->version(),
+            ),
+            $this->args ?? array(),
         );
     }
 
     /**
-     * Can a action be performed on the asset
+     * Get the arguments for localizing the asset.
      *
-     * @param  string      $what Action to perform.
-     * @param  string|null $when Optional. When to perform the action.
-     * @return bool
+     * @return array<string, mixed>|false
      */
-    public function can( string $what, ?string $when = null ): bool {
-        if ( ! ( $this->config[ $what ] ?? false ) || ( $this->actions[ $what ] ?? false ) ) {
+    protected function localize_args(): array|bool {
+        $args = \apply_filters( "localize_{$this->type()}_args_{$this->handle()}", array(), $this );
+
+        if ( ! isset( $args['l10n'], $args['object_name'] ) ) {
             return false;
         }
 
-        if ( null === $when ) {
-            return true;
-        }
-
-        return $when === $this->config[ $what ];
+        return $args;
     }
 
     /**
-     * Perform actions on the asset
+     * Get the arguments for enqueuing the asset.
      *
-     * @param string|null $when Optional. When to perform the action.
+     * @return array<string, mixed>
      */
-    public function do_actions( string $when = null ) {
-        foreach ( \array_keys( $this->config ) as $what ) {
-            if ( ! $this->can( $what, $when ) ) {
-                continue;
-            }
+    protected function enqueue_args(): array {
+        return array();
+    }
 
-            $this->$what();
-            $this->actions[ $what ] = true;
+    /**
+     * Get the arguments for adding inline data to the asset.
+     *
+     * @return array<string, mixed>|false
+     */
+    protected function add_inline_args(): array|bool {
+        $args = \apply_filters( "inline_{$this->type()}_args_{$this->handle()}", array(), $this );
+
+        if ( ! isset( $args['data'] ) ) {
+            return false;
         }
+
+        return $args;
     }
 
-    public function can_enqueue( Context $ctx = null ): bool {
-        return \apply_filters( "can_enqueue_{$this->handle}", true, $this, $ctx );
+    public function deregister(): bool {
+        $cb = "wp_deregister_{$this->type()}";
+
+        $cb( $this->handle() );
+        return true;
     }
+
+    public function dequeue(): bool {
+        $cb = "wp_dequeue_{$this->type()}";
+
+        $cb( $this->handle() );
+        return true;
+    }
+
+    /**
+     * Get the type of the asset.
+     *
+     * @return 'script'|'style'
+     */
+    abstract protected function type(): string;
 }

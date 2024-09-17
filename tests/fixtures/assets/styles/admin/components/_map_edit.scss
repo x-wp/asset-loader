@@ -1,0 +1,38 @@
+.dynamic_margin {
+  .clear {
+    &::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  }
+
+  .dynamic_margin_field {
+    .dynamic-fields {
+      float: left;
+      display: block;
+
+      .woosync-dyn-margin-row {
+        display: block;
+        max-width: 800px;
+        margin-bottom: 5px;
+
+        &:nth-child(1) {
+          button {
+            display: none;
+          }
+        }
+
+        label {
+          float: none;
+          margin: 0;
+        }
+
+        input {
+          width: 100px;
+          float: none;
+        }
+      }
+    }
+  }
+}

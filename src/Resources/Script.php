@@ -1,107 +1,65 @@
-<?php //phpcs:disable SlevomatCodingStandard.Functions.RequireSingleLineCall, Squiz.Commenting.FunctionComment
+<?php //phpcs:disable Squiz.Commenting.FunctionComment.Missing
+
 namespace XWP\Dependency\Resources;
 
-use XWP\Contracts\Hook\Context;
-use XWP\Dependency\Enums\Asset_Type;
-use XWP\Dependency\Enums\EnqueueMode;
-use XWP\Dependency\Resources\Bundle;
-
+/**
+ * Script asset class.
+ */
 class Script extends Asset {
-    public const ASSET_TYPE = Asset_Type::Script;
-
-    /**
-     * Additional enqueue arguments
-     *
-     * @var array
-     */
-    public readonly array $args;
-
-    /**
-     * Constructor
-     *
-     * @param  array $args      Additional enqueue arguments.
-     */
-    public function __construct(
-        string $src,
-        string $namespace,
-        ?string $handle = null,
-        Context $context = Context::Global,
-        EnqueueMode $mode = EnqueueMode::Automatic,
-        ?string $version = Bundle::DEFAULT_VERSION,
-        array $deps = array(),
-        array $config = array(),
-        array $args = array(),
-    ) {
-        parent::__construct( $src, $namespace, $handle, $context, $mode, $version, $deps, $config );
-
-        $this->args = $args;
+    protected function type(): string {
+        return 'script';
     }
 
-    protected function default_config(): array {
-        return array(
-            'configure' => false,
-            'localize'  => false,
-        );
-    }
-
-    public function get_resource_args( string $base_uri ): array {
+    protected function register_args(): array {
         return \array_merge(
-            parent::get_resource_args( $base_uri ),
             array(
-				'args' => array(
-					'in_footer' => $this->args['in_footer'] ?? true,
-					'strategy'  => $this->args['strategy'] ?? 'defer',
-				),
-			),
+                'args' => array(
+                    'in_footer' => true,
+                ),
+            ),
+            parent::register_args(),
         );
     }
 
     /**
-     * Localizes the script
+     * Aditionally processes array data - converts it to JS variables.
+     *
+     * @return array<string, mixed>|false
      */
-    public function localize(): void {
-        $name = \str_replace( ' ', '', \ucwords( \str_replace( array( '-', '_' ), ' ', $this->handle ) ) );
-        $args = array(
-            'handle'      => $this->handle,
-            'l10n'        => array(),
-            'object_name' => $name,
-        );
+    protected function add_inline_args(): array|bool {
+        $args = parent::add_inline_args();
 
-        $args = \apply_filters( "localize_params_{$this->handle}", $args, $this );
-
-        \wp_localize_script( ...$args );
-    }
-
-    /**
-     * Configures the script
-     */
-    public function configure(): void {
-        $args = array(
-            'data'     => '',
-            'handle'   => $this->handle,
-            'position' => 'after',
-        );
-
-        $args = \apply_filters( "configure_params_{$this->handle}", $args, $this );
-
-        \wp_add_inline_script( ...$args );
-    }
-
-    public function register( string $base_uri = '' ): void {
-        \wp_register_script( ...$this->get_resource_args( $base_uri ) );
-
-        $this->do_actions( 'register' );
-    }
-
-    public function enqueue( EnqueueMode $mode = EnqueueMode::Manual ): bool {
-        if ( $mode !== $this->mode ) {
+        if ( false === $args ) {
             return false;
         }
 
-        $this->do_actions( 'enqueue' );
+        if ( \is_array( $args['data'] ) ) {
+            $args['data'] = \array_map(
+                static fn( $v, $k ) => \sprintf( 'var %s = %s;', $k, \wp_json_encode( $v ) ),
+                $args['data'],
+                \array_keys( $args['data'] ),
+            );
+            $args['data'] = \implode( "\n", $args['data'] );
+        }
 
-        \wp_enqueue_script( $this->handle );
+        return $args;
+    }
 
-        return true;
+    public function localize(): bool {
+        if ( \has_action( $this->action_name() ) ) {
+            \do_action( $this->action_name(), $this );
+            return true;
+        }
+
+        return parent::localize();
+    }
+
+    /**
+     * Get the name of the legacy action for localizing the script.
+     *
+     * @return string
+     */
+    protected function action_name(): string {
+        return "{$this->bundle->id()}_localize_{$this->type()}";
     }
 }

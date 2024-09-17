@@ -1,0 +1,45 @@
+{
+  "name": "woocommerce-sync-service",
+  "version": "2.0.3",
+  "description": "A WPWebpack project",
+  "license": "GPL-3.0",
+  "scripts": {
+    "build": "webpack --config assets/webpack/webpack.config.ts",
+    "build:production": "webpack --env production --config assets/webpack/webpack.config.ts",
+    "watch": "webpack --watch --config assets/webpack/webpack.config.ts",
+    "lint": "npm run -s lint:scripts && npm run -s lint:styles",
+    "lint:scripts": "eslint assets/scripts",
+    "lint:styles": "stylelint \"assets/styles/**/*.{css,sass,scss,sss,less}\""
+  },
+  "dependencies": {
+    "@wptoolset/router": "^1.0.4",
+    "awesome-notifications": "^3.1.3",
+    "camelcase": "^6.2.0",
+    "moment": "^2.29.1"
+  },
+  "devDependencies": {
+    "@types/awesome-notifications": "^3",
+    "@types/backbone": "^1.4.19",
+    "@types/jquery": "^3.5.5",
+    "@types/lodash": "^4.17.0",
+    "@types/select2": "^4.0.53",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "@x-wp/semantic-release-config": "^1.3.1",
+    "@x-wp/wordpack": "^1.2.4",
+    "eslint": "^8.50",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.4.1",
+    "stylelint": "^15.10.1",
+    "stylelint-config-standard": "^34.0.0",
+    "stylelint-config-standard-scss": "^10.0.0",
+    "typescript": "5",
+    "webpack": "^5",
+    "webpack-cli": "^5"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

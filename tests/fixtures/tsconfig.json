@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2019"
+  },
+  "include": ["assets/scripts/**/*"],
+  "types": [
+    "./assets/scripts/@types/index.d.ts",
+  ]
+}
