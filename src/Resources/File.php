@@ -55,6 +55,15 @@ class File {
     }
 
     /**
+     * Get the bundle instance.
+     *
+     * @return XWP_Asset_Bundle
+     */
+    public function bundle(): XWP_Asset_Bundle {
+        return $this->bundle;
+    }
+
+    /**
      * Get the WP_Filesystem instance.
      *
      * @return \WP_Filesystem_Base|null
