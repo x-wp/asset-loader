@@ -55,21 +55,21 @@ class File {
     }
 
     /**
+     * Get the WP_Filesystem instance.
+     *
+     * @return \WP_Filesystem_Direct|null
+     */
+    protected function wpfs(): ?\WP_Filesystem_Direct {
+        return \xwp_wpfs() ?: null;
+    }
+
+    /**
      * Get the bundle instance.
      *
      * @return XWP_Asset_Bundle
      */
     public function bundle(): XWP_Asset_Bundle {
         return $this->bundle;
-    }
-
-    /**
-     * Get the WP_Filesystem instance.
-     *
-     * @return \WP_Filesystem_Base|null
-     */
-    protected function wpfs(): ?\WP_Filesystem_Base {
-        return \wp_load_filesystem() ?: null;
     }
 
     /**

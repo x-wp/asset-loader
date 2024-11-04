@@ -359,7 +359,7 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
      * @param  class-string<T> $type The type of asset to get.
      * @return array<string,T>
      */
-    public function get( string $type ): array {
+    public function collect( string $type ): array {
         $found = array();
 
         foreach ( array_keys( $this->manifest ) as $src ) {
@@ -371,5 +371,22 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
         }
 
         return $found;
+    }
+
+    /**
+     * Get an asset by field.
+     *
+     * @param  string $id The ID of the asset to get.
+     * @param  string $field The field to search by.
+     * @return Style|Script|Image|Font|null
+     */
+    public function get( string $id, string $field = 'handle' ): Style|Script|Image|Font|null {
+        foreach ( array_keys( $this->manifest ) as $src ) {
+            if ( $id === $this[ $src ]->{"{$field}"}() ) {
+                return $this[ $src ];
+            }
+        }
+
+        return null;
     }
 }

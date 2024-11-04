@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6170a3267208d7f217ad6b657d7cda1c",
+    "content-hash": "2221df8ea8af936286f4fe25c4eecd7a",
     "packages": [
         {
             "name": "automattic/jetpack-constants",
@@ -59,16 +59,16 @@
         },
         {
             "name": "x-wp/helper-functions",
-            "version": "v1.9.0",
+            "version": "v1.18.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/x-wp/helper-functions.git",
-                "reference": "951890a5352d2c293c086e20affb7aa6d8cc2fd8"
+                "reference": "edd258d0b2ad90a78893ffcabf6626cebf56a281"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/x-wp/helper-functions/zipball/951890a5352d2c293c086e20affb7aa6d8cc2fd8",
-                "reference": "951890a5352d2c293c086e20affb7aa6d8cc2fd8",
+                "url": "https://api.github.com/repos/x-wp/helper-functions/zipball/edd258d0b2ad90a78893ffcabf6626cebf56a281",
+                "reference": "edd258d0b2ad90a78893ffcabf6626cebf56a281",
                 "shasum": ""
             },
             "require": {
@@ -80,8 +80,10 @@
             "type": "library",
             "autoload": {
                 "files": [
-                    "xwp-helper-fns.php",
-                    "xwp-helper-fns-req.php"
+                    "xwp-helper-fns-arr.php",
+                    "xwp-helper-fns-num.php",
+                    "xwp-helper-fns-req.php",
+                    "xwp-helper-fns.php"
                 ],
                 "psr-4": {
                     "XWP\\Helper\\Functions\\": "."
@@ -109,9 +111,9 @@
             ],
             "support": {
                 "issues": "https://github.com/x-wp/helper-functions/issues",
-                "source": "https://github.com/x-wp/helper-functions/tree/v1.9.0"
+                "source": "https://github.com/x-wp/helper-functions/tree/v1.18.1"
             },
-            "time": "2024-09-07T15:40:44+00:00"
+            "time": "2024-11-04T00:58:34+00:00"
         },
         {
             "name": "x-wp/helper-traits",
