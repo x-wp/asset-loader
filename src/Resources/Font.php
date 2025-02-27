@@ -15,9 +15,10 @@ class Font extends File {
     /**
      * Add the preload tag to the head for the font.
      *
+     * @param  int|null $priority Priority of the action. Defaults to the bundle priority.
      * @return bool
      */
-    public function preload(): bool {
+    public function preload( ?int $priority = null ): bool {
         if ( \did_action( 'wp_head' ) ) {
             return false;
         }
@@ -31,7 +32,7 @@ class Font extends File {
                     \esc_attr( $this->ext() ),
 				);
 			},
-            $this->bundle->priority(),
+            $priority ?? $this->bundle->priority(),
         );
 
         return true;

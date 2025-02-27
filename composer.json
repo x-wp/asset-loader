@@ -10,7 +10,7 @@
   ],
   "require": {
     "php": ">=8.0",
-    "automattic/jetpack-constants": "^2.0",
+    "automattic/jetpack-constants": "^2 | ^3",
     "x-wp/helper-functions": "^1.18",
     "x-wp/helper-traits": "^1.9"
   },
