@@ -7,6 +7,7 @@
  */
 
 use XWP\Dependency\Manifest;
+use XWP\Dependency\Resources\File;
 use XWP\Dependency\Resources\Font;
 use XWP\Dependency\Resources\Image;
 use XWP\Dependency\Resources\Script;
@@ -45,6 +46,19 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
     protected array $manifest = array();
 
     /**
+     * Make a bundle from arguments.
+     *
+     * @param  array<string,mixed> $args Bundle arguments.
+     * @param  bool                $load Optional. Load the bundle. Default true.
+     * @return self
+     */
+    public static function make( array $args, bool $load = true ): self {
+        $bundle = new self( ...$args );
+
+        return $load ? $bundle->load() : $bundle;
+    }
+
+    /**
      * Constructor
      *
      * @param string                                                       $id       Bundle ID.
@@ -54,6 +68,7 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
      * @param string|false|null                                            $version  Bundle version.
      * @param string|bool                                                  $manifest Asset manifest.
      * @param array<'front'|'admin',array<int,string|array<string,mixed>>> $assets   Bundle assets.
+     * @param array<int,string>                                            $files    Bundle files.
      */
     public function __construct(
         /**
@@ -88,10 +103,12 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
         protected string|bool|null $version = null,
         string|bool $manifest = false,
         array $assets = array(),
+        array $files = array(),
     ) {
         $this
             ->with_manifest( $manifest )
-            ->with_assets( $assets );
+            ->with_assets( $assets )
+            ->with_files( $files );
     }
 
     /**
@@ -185,6 +202,39 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
     }
 
     /**
+     * Load assets.
+     *
+     * @param  array<'front'|'admin',array<int,string|array<string,mixed>>> $assets The assets to load.
+     * @return self
+     */
+    public function with_assets( array $assets ): self {
+        foreach ( $assets as $ctx => $assets ) {
+            $this->with_asset_group( $ctx, $assets );
+        }
+
+        return $this;
+    }
+
+    /**
+     * Load an asset group.
+     *
+     * @param  'admin'|'front'                       $ctx    The context of the asset group.
+     * @param  array<int,string|array<string,mixed>> $assets The assets to load.
+     * @return self
+     */
+    public function with_asset_group( string $ctx, array $assets ): self {
+        foreach ( $assets as $asset ) {
+            $asset = \is_string( $asset ) ? array( 'src' => $asset ) : $asset;
+
+            $asset['ctx'] = $ctx;
+
+            $this->with_asset( $this->make_asset( $asset ) );
+        }
+
+        return $this;
+    }
+
+    /**
      * Add an asset to the bundle.
      *
      * @param  Script|Style $asset The asset to add.
@@ -193,6 +243,32 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
     public function with_asset( Script|Style $asset ): self {
         $this[ $asset->src() ]           = $asset;
         $this->assets[ $asset->ctx() ][] = $asset->src();
+
+        return $this;
+    }
+
+    /**
+     * Add files to the bundle.
+     *
+     * @param  array<int,string> $files Files to add.
+     * @return self
+     */
+    public function with_files( array $files ): self {
+        foreach ( $files as $file ) {
+            $this->with_file( $this->make_file( $file ) );
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add a file to the bundle.
+     *
+     * @param  Image|Font $file The file to add.
+     * @return self
+     */
+    public function with_file( Image|Font $file ): self {
+        $this[ $file->src() ] = $file;
 
         return $this;
     }
@@ -243,39 +319,6 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
     }
 
     /**
-     * Load assets.
-     *
-     * @param  array<'front'|'admin',array<int,string|array<string,mixed>>> $assets The assets to load.
-     * @return self
-     */
-    public function with_assets( array $assets ): self {
-        foreach ( $assets as $ctx => $assets ) {
-            $this->with_asset_group( $ctx, $assets );
-        }
-
-        return $this;
-    }
-
-    /**
-     * Load an asset group.
-     *
-     * @param  'admin'|'front'                       $ctx    The context of the asset group.
-     * @param  array<int,string|array<string,mixed>> $assets The assets to load.
-     * @return self
-     */
-    public function with_asset_group( string $ctx, array $assets ): self {
-        foreach ( $assets as $asset ) {
-            $asset = \is_string( $asset ) ? array( 'src' => $asset ) : $asset;
-
-            $asset['ctx'] = $ctx;
-
-            $this->with_asset( $this->make_asset( $asset ) );
-        }
-
-        return $this;
-    }
-
-    /**
      * Make a file.
      *
      * @param  string $src The source of the file.
@@ -289,7 +332,7 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
             'ico', 'svg', 'jpeg',
             'webp', 'avif', 'apng' => Image::class,
             'ttf', 'woff', 'woff2' => Font::class,
-            default => Image::class,
+            default                => Image::class,
         };
 
         return new $cname( $this, $src, $this->manifest[ $src ] );
@@ -327,9 +370,13 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
 
     /**
      * Load the bundle.
+     *
+     * @return self
      */
-    public function load(): void {
+    public function load(): self {
         \XWP_Asset_Loader::add_bundle( $this );
+
+        return $this;
     }
 
     /**
