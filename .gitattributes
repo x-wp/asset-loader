@@ -10,3 +10,4 @@
 /CONTRIBUTING.md export-ignore
 /phpstan.neon export-ignore
 /SECURITY.md export-ignore
+/phpunit.xml.dist export-ignore
