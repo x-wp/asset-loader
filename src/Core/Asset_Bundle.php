@@ -364,8 +364,16 @@ class XWP_Asset_Bundle implements \ArrayAccess, \Iterator, \Countable, \JsonSeri
      * @return array<string,Script|Style>
      */
     public function get_assets( string $ctx ): array {
+        $keys = $this->assets[ $ctx ] ?? array();
+
+        // An empty context must yield no assets. `xwp_array_slice_assoc()` returns the
+        // whole array when given no keys, which leaked admin-only bundles to the front.
+        if ( array() === $keys ) {
+            return array();
+        }
+
         // @phpstan-ignore return.type
-        return \xwp_array_slice_assoc( $this->arr_data, ...$this->assets[ $ctx ] );
+        return \array_intersect_key( $this->arr_data, \array_flip( $keys ) );
     }
 
     /**
